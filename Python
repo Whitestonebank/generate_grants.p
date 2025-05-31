@@ -1,0 +1,79 @@
+import os
+import zipfile
+from PIL import Image, ImageDraw, ImageFont
+
+# Ensure output directory exists
+output_dir = "nextgen_grant_proofs"
+os.makedirs(output_dir, exist_ok=True)
+
+# Load logo
+logo_path = "logo.png"  # Make sure this file is in the same folder
+logo = Image.open(logo_path).convert("RGBA")
+
+# Sample recipient data
+recipients = [
+    {"name": "Maria Johnson", "location": "Austin, TX"},
+    {"name": "David Smith", "location": "Seattle, WA"},
+    {"name": "Laura Chen", "location": "San Diego, CA"},
+    {"name": "Michael Brown", "location": "Chicago, IL"},
+    {"name": "Sophia Martinez", "location": "Miami, FL"}
+]
+
+# Function to generate each letter
+def create_grant_letter(recipient, output_path):
+    img = Image.new("RGB", (800, 1000), "white")
+    draw = ImageDraw.Draw(img)
+
+    # Load system default font
+    font = ImageFont.load_default()
+
+    # Paste logo
+    resized_logo = logo.resize((150, 150))
+    img.paste(resized_logo, (325, 20), resized_logo)
+
+    # Title
+    draw.text((50, 200), "NEXTGEN IMPACT FUND", font=font, fill="black")
+    draw.text((50, 250), "GRANT AWARD LETTER", font=font, fill="black")
+
+    # Letter body
+    body = f"""
+Dear {recipient['name']},
+
+We are pleased to inform you that you have been selected as a recipient of the
+NextGen Impact Fund Grant in the amount of $50,000.
+
+Your application demonstrated a strong commitment to positive impact and
+community development. This grant is awarded to support your ongoing work and
+encourage continued success in your field.
+
+Please find your grant documentation enclosed and expect a direct deposit to the
+financial details you provided within 7-10 business days.
+
+Congratulations once again, and thank you for your dedication.
+
+Sincerely,
+NextGen Impact Fund Team
+    """
+
+    # Draw body line-by-line
+    y_text = 300
+    for line in body.strip().split("\n"):
+        draw.text((50, y_text), line.strip(), font=font, fill="black")
+        y_text += 20
+
+    # Save image
+    img.save(output_path)
+
+# Generate images
+image_paths = []
+for i, recipient in enumerate(recipients):
+    img_file = os.path.join(output_dir, f"grant_letter_{i+1}.png")
+    create_grant_letter(recipient, img_file)
+    image_paths.append(img_file)
+
+# Create ZIP archive
+with zipfile.ZipFile("NextGen_Grant_Proofs.zip", "w") as zipf:
+    for file in image_paths:
+        zipf.write(file, os.path.basename(file))
+
+print("✅ All grant letters created and zipped into 'NextGen_Grant_Proofs.zip'")
